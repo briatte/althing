@@ -1,6 +1,10 @@
 # scrape bills (Lagafrumvörp); leaving resolutions (Þingsályktunartillögur) out
 # URL: http://www.althingi.is/vefur/thingmalalisti.html?cmalteg=l
 
+root = "http://www.althingi.is"
+bills = "data/bills.csv"
+sponsors = "data/sponsors.csv"
+
 if(!file.exists(bills)) {
   
   b = data.frame()
@@ -8,8 +12,13 @@ if(!file.exists(bills)) {
     
     cat(sprintf("%3.0f", i))
     
-    h = GET(paste0(root, "/vefur/thingmalalisti.html?cmalteg=l&orderby=&validthing=", i))
-    h = htmlParse(h, encoding = "UTF-8")
+    file = paste0("raw/bills-", i, ".html")
+    
+    if(!file.exists(file))
+      download.file(paste0(root, "/vefur/thingmalalisti.html?cmalteg=l&orderby=&validthing=", i), file,
+                    quiet = TRUE, mode = "wb")
+    
+    h = htmlParse(file, encoding = "UTF-8")
     
     ref = xpathSApply(h, "//table[@id='t_malalisti']//tr/td[1]", xmlValue)
     if(length(ref)) {
@@ -35,7 +44,7 @@ if(!file.exists(bills)) {
     
   }
   
-  b$author = scrubber(b$author)
+  b$author = str_clean(b$author)
   b$authors = str_trim(b$authors)
   b$date = as.Date(strptime(b$date, "%d.%m.%Y"))
   b$text = NA
@@ -49,24 +58,30 @@ b = read.csv(bills, stringsAsFactors = FALSE)
 
 b$ministry = grepl("nefnd", b$authors)
 
-# rerun as many times as needed -- this loop crashes httr after some time
-# read about the issue here: https://github.com/hadley/httr/issues/112
-
 j = unique(b$authors[ !b$ministry & is.na(b$sponsors) ])
 
 for(i in rev(j)) {
   
   cat(sprintf("%4.0f", which(j == i)), i)
   
-  h = try(GET(handle = handle(paste0(root, i))), silent = TRUE)
-  h = try(htmlParse(h, encoding = "UTF-8"), silent = TRUE)
+  file = gsub("/dba-bin/flms\\.pl\\?lthing=(\\d+)&skjalnr=(\\d+)", "raw/bill-\\1-\\2.html", i)
   
-  if(!"try-error" %in% class(h)) {
+  if(!file.exists(file))
+    try(download.file(paste0(root, i), file, quiet = TRUE, mode = "wb"), silent = TRUE)
+  
+  if(!file.info(file)$size) {
+    
+    file.remove(file)
+    cat(": failed\n")
+    
+  } else {
+
+    h = htmlParse(file, encoding = "UTF-8")
     
     text = xpathSApply(h, "//h1[@class='FyrirsognStorSv']/following-sibling::div[@class='AlmTexti']", xmlValue)
     urls = xpathSApply(h, "//h1[@class='FyrirsognStorSv']/following-sibling::div[@class='AlmTexti']/a/@href")
     
-    b$text[ b$authors == i ] = scrubber(text)
+    b$text[ b$authors == i ] = str_clean(text)
     
     if(length(urls)) {
       
@@ -80,28 +95,15 @@ for(i in rev(j)) {
       
     }
     
-  } else {
-    
-    cat(": failed\n")
-    
   }
-  
-  # save regularly to avoid losing too much data when the loop crashes
-  # also save at the final bill
-  if(!(which(j == i) %% 100) | which(j == i) == 1) {
     
-    b$text = gsub("(.*) löggjafarþingi\\. ", "", b$text)
-    b$text = gsub("(.*) Gert (.*)", "\\1", b$text)
-    b$text[ grepl("^Gert (.*)\\.$", b$text) ] = ""
-    
-    write.csv(b, bills, row.names = FALSE)
-    cat("Saved\n")
-    
-  }
-  
 }
 
-b = read.csv(bills, stringsAsFactors = FALSE)
+b$text = gsub("(.*) löggjafarþingi\\. ", "", b$text)
+b$text = gsub("(.*) Gert (.*)", "\\1", b$text)
+b$text[ grepl("^Gert (.*)\\.$", b$text) ] = ""
+
+write.csv(b, bills, row.names = FALSE)
 
 b$legislature = NA
 b$legislature[ b$session %in% 142:144 ] = "2013-2017" # election in April, bills from s. 142 start in June
@@ -117,7 +119,7 @@ b = subset(b, !is.na(legislature))
 b$n_au = 1 + str_count(b$sponsors, ";")
 b$n_au[ b$ministry ] = NA
 
-print(table(b$legislature, b$n_au > 1, exclude = NULL))
+# print(table(b$legislature, b$n_au > 1, exclude = NULL))
 
 # scrape sponsors
 
@@ -281,7 +283,7 @@ for(i in c("A", "%C1", "B", "D", "E", "F", "G", "H", "I", "%CD", "J", "K",
   h = htmlParse(f, encoding = "UTF-8")
   u = xpathSApply(h, "//a[contains(@href, 'nfaerslunr')]/@href")
   m = xpathSApply(h, "//a[contains(@href, 'nfaerslunr')]/..", xmlValue)
-  m = scrubber(gsub("(.*)(Al|V)þm.", "", m))
+  m = str_clean(gsub("(.*)(Al|V)þm.", "", m))
   cv = rbind(cv, data.frame(url = u, mandate = m, stringsAsFactors = FALSE))
   
 }
@@ -330,6 +332,11 @@ cv$mandate = sapply(cv$mandate, function(y) {
 
 s = merge(s, cv[, c("url", "party", "partyname", "mandate") ], by = "url")
 
-print(table(s$partyname, exclude = NULL))
+# print(table(s$partyname, exclude = NULL))
+
+# final processing of URLs
+s$url = gsub("/altext/cv/is/\\?nfaerslunr=", "", s$url)
+b$sponsors = gsub("/altext/cv/is/\\?nfaerslunr=", "", b$sponsors)
+s$photo = gsub("photos/|\\.jpg", "", s$photo)
 
 # kthxbye

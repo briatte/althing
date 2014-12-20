@@ -291,11 +291,37 @@ for(i in c("A", "%C1", "B", "D", "E", "F", "G", "H", "I", "%CD", "J", "K",
 cv$url = gsub("cv/\\?", "cv/is/?", cv$url)
 cv = subset(cv, url %in% s$url)
 
-# extract main political parties
+#
+# all constituencies (frequent changes)
+#
+
+# Barð|Mýr|(|Vest)url|Norð(aust|vest)|Reyk(jav|n|v)|(N\\.|Norður|S\\.|Suður)-Múl|Strand|Suð(urk|url|vest)|Vestf
+cv$constituency = str_extract_all(cv$mandate, "(Aust|Vest|Norð|Suð)ur(l|vest)|Norð(aust|vest)|Reyk(jav|n|v)|Suð(urk|vest)|Vest(f|url)")
+cv$constituency = sapply(cv$constituency, function(x) paste0(unique(x), collapse = ";"))
+cv$url[ is.na(cv$constituency) ] # missing three
+# "-url" = "-lands"
+# "Vestf" = "Vestfirðinga"
+# "Reykv" = Reykvíkinga"
+# "Reykn" = "Reyknesinga"
+table(cv$constituency, exclude = NULL)
+
+# simplification: first constituency
+cv$constituency = str_extract(cv$mandate, "(Aust|Vest|Norð|Suð)ur(l|vest)|Norð(aust|vest)|Reyk(jav|n|v)|Suð(urk|vest)|Vest(f|url)")
+
+#
+# all parties (frequent changes)
+#
+
+cv$party = str_extract_all(cv$mandate, "V(instri|g)|Samf|jafna|Sjálf|Fram|Frjál|Hrey|Pírat|Björt|Samtök|Alþ(ý|fl|b)")
+cv$party = sapply(cv$party, function(x) paste0(unique(x), collapse = ";"))
+cv$url[ is.na(cv$party) ] # missing none
+table(cv$party, exclude = NULL)
+
+# simplification (1): extract main political parties
 cv$party = str_extract(cv$mandate, "V(instri|g)|Samf|jafna|Sjálf|Fram|Frjál|Hrey|Pírat|Björt|Samtök|Alþ(ý|fl|b)")
 cv$party[ cv$party == "Vinstri" ] = "Vg"
 
-# simplification: various codes before 1999, coded differently depending on MPs
+# simplification (2): group three leftwing parties before 1999 (coded differently depending on MPs)
 cv$party[ grepl("Alþ|jafna|Samtök", cv$party) ] = "Samf"
 
 table(cv$party)
@@ -303,16 +329,7 @@ table(cv$party)
 cv$party = toupper(cv$party)
 cv$party[ is.na(cv$party)] = "IND"
 
-cv$partyname = NA
-cv$partyname[ cv$party == "IND" ] = "independent"
-cv$partyname[ cv$party == "BJÖRT" ] = "Björt framtíð"
-cv$partyname[ cv$party == "FRAM" ] = "Framsóknarflokkurinn"
-cv$partyname[ cv$party == "FRJÁL" ] = "Frjálslyndi flokkurinn"
-cv$partyname[ cv$party == "HREY" ] = "Hreyfingin"
-cv$partyname[ cv$party == "PÍRAT" ] = "Píratar"
-cv$partyname[ cv$party == "SAMF" ] = "Samfylkingin-Jafnaðarmannaflokkur" # and other Social-Democratic parties before 1999
-cv$partyname[ cv$party == "SJÁLF" ] = "Sjálfstæðisflokkurinn"
-cv$partyname[ cv$party == "VG" ] = "Vinstrihreyfingin – grænt framboð"
+cv$partyname = as.character(groups[ cv$party ])
 
 # expand mandate to years
 cv$mandate = sapply(cv$mandate, function(y) {
@@ -330,7 +347,7 @@ cv$mandate = sapply(cv$mandate, function(y) {
   paste0(sort(unique(unlist(x))), collapse = ";") # all years included in mandate(s)
 })
 
-s = merge(s, cv[, c("url", "party", "partyname", "mandate") ], by = "url")
+s = merge(s, cv[, c("url", "party", "partyname", "constituency", "mandate") ], by = "url")
 
 # print(table(s$partyname, exclude = NULL))
 

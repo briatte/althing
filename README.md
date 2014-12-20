@@ -7,7 +7,7 @@ This repository contains code to build cosponsorship networks from bills passed 
 
 Replicate by running `make.r` in R.
 
-The `data.r` script downloads information on bills and sponsors. Due to [what looks like a bug](https://github.com/hadley/httr/issues/112) in the `httr` package, the download loop for bills is likely to fail after a thousand iterations or so. Re-run as many times as needed.
+The `data.r` script downloads information on bills and sponsors. The download loop can be set to go back to 1907. By default, it stops in 1995, the first election after the constitutional reform that made the Althing a completely unicameral chamber.
 
 The `build.r` script then assembles the edge lists and plots the networks, with the help of a few routines coded into `functions.r`. Adjust the `plot`, `gexf` and `mode` parameters to skip the plots or to change the node placement algorithm.
 
@@ -36,7 +36,10 @@ The `build.r` script then assembles the edge lists and plots the networks, with 
 - `photo` -- photo URL, shortened to filename number
 - `party` -- main party affiliation (with some transitions ignored), abbreviated
 - `partyname` -- main party affiliation (with some transitions ignored), full name
+- `constituency` -- sponsor constituency
 - `sex` -- gender (F/M), imputed from first and family names
 - `mandate` -- semicolon-separated mandate years, used to compute the `nyears` seniority variable
 
-Note -- "SAMF" regroups the four parties that created the Social-Democratic Alliance in 1999.
+Note (1) -- "SAMF" regroups the four parties that created the Social-Democratic Alliance in 1999.
+
+Note (2) -- There are frequent transitions in constituency and party among the sponsors. These are not currently taken into account in the data: only the first constituency and party are used.

@@ -12,6 +12,20 @@ colors = c(
   "IND"   = "#AAAAAA"
 )
 
+# party names
+
+groups = c(
+  "VG" = "Vinstrihreyfingin – grænt framboð",
+  "PÍRAT" = "Píratar",
+  "SAMF" = "Samfylkingin-Jafnaðarmannaflokkur", # and other Social-Democratic parties before 1999
+  "FRAM" = "Framsóknarflokkurinn",
+  "BJÖRT" = "Björt framtíð",
+  "HREY" = "Hreyfingin",
+  "FRJÁL" = "Frjálslyndi flokkurinn",
+  "SJÁLF" = "Sjálfstæðisflokkurinn",
+  "IND" = "independent"
+)
+
 # ParlGov Left/Right scores
 
 scores = c(

@@ -180,9 +180,10 @@ if(!file.exists(sponsors)) {
   s$born[ s$url == "/altext/cv/is/?nfaerslunr=1120" ] = "1966" # Sandra Franks, 17. mars 1966.
   s$born[ s$url == "/altext/cv/is/?nfaerslunr=1049" ] = "1959" # Kolbrún Baldursdóttir, 23. mars 1959.
   
+  # check: no overlap in regex
   s$sex = NA
-  s$sex[ grepl("sen$|son$", s$name) | grepl("^(Edward|Ellert|Geir|Halldór|Kristján|Magnús|Ólöf|Óttarr|Paul|Pétur|Ragnar|Róbert|Tómas|Þór)", s$name) ] = "M"
-  s$sex[ grepl("dóttir$", s$name) | grepl("^(Ásta|Dýrleif|Elín|Helgi|Jónína|Katrín|Sandra|Þuríður)", s$name) ] = "F"
+  s$sex[ grepl("sen$|son$", s$name) | grepl("^(Edward|Ellert|Geir|Halldór\\s|Kristján|Magnús|Ólöf|Óttarr|Paul|Pétur|Ragnar|Róbert|Tómas|Þór\\s)", s$name) ] = "M"
+  s$sex[ grepl("dóttir$", s$name) | grepl("^(Ásta|Dýrleif|Elín|Jónína|Katrín|Sandra|Þuríður)", s$name) ] = "F"
   
   # fix duplicates (written after downloading all sponsors, session 20-144)
   # reshape::sort_df(subset(s, name %in% s$name[duplicated(s$name)]), "name")

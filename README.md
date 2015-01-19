@@ -36,7 +36,7 @@ The `build.r` script then assembles the edge lists and plots the networks, with 
 - `photo` -- photo URL, shortened to filename number
 - `party` -- main party affiliation (with some transitions ignored), abbreviated
 - `partyname` -- main party affiliation (with some transitions ignored), full name
-- `constituency` -- sponsor constituency
+- `constituency` -- sponsor constituency, stored as the string to its Wikipedia Íslenska entry
 - `sex` -- gender (F/M), imputed from first and family names
 - `mandate` -- semicolon-separated mandate years, used to compute the `nyears` seniority variable
 

@@ -17,7 +17,7 @@ for(ii in rev(unique(na.omit(b$legislature)))) {
   # directed edge list
   #
   
-  edges = rbind_all(lapply(unique(data$authors), function(d) {
+  edges = bind_rows(lapply(unique(data$authors), function(d) {
     
     w = au$name[ au$authors == d ] # sponsor list is ordered
     

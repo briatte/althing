@@ -1,7 +1,8 @@
 This repository contains code to build cosponsorship networks from bills passed in the [Icelandic Parliament](http://www.althingi.is/).
 
-- [interactive demo](http://briatte.org/althing)
-- [static plots](http://briatte.org/althing/plots.html)
+- [interactive demo](http://f.briatte.org/parlviz/althing)
+- [static plots](http://f.briatte.org/parlviz/althing/plots.html)
+- [more countries](https://github.com/briatte/parlnet)
 
 # HOWTO
 

@@ -109,11 +109,11 @@ for(ii in rev(unique(na.omit(b$legislature)))) {
   })
   n %v% "nyears" = as.numeric(sp[ network.vertex.names(n), "nyears" ])
   
-	# unweighted degree
-	n %v% "degree" = degree(n)
-	q = n %v% "degree"
-	q = as.numeric(cut(q, unique(quantile(q)), include.lowest = TRUE))
-	
+  # unweighted degree
+  n %v% "degree" = degree(n)
+  q = n %v% "degree"
+  q = as.numeric(cut(q, unique(quantile(q)), include.lowest = TRUE))
+  
   set.edge.attribute(n, "source", as.character(edges[, 1])) # cosponsor
   set.edge.attribute(n, "target", as.character(edges[, 2])) # first author
   

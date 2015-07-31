@@ -1,12 +1,9 @@
-meta = c("Iceland", "Althing")
-mode = "fruchtermanreingold"
-
 for(ii in rev(unique(na.omit(b$legislature)))) {
   
   cat(ii)
   data = subset(b, legislature == ii & n_au > 1)
   au = subset(a, legislature == ii)
-  sp = subset(s, legislature == ii)
+  sp = subset(s, legislature == ii) %>% data.frame
   
   rownames(sp) = sp$url
   au$name = sp[ au$url , "name" ]
@@ -17,15 +14,15 @@ for(ii in rev(unique(na.omit(b$legislature)))) {
   # directed edge list
   #
   
-  edges = bind_rows(lapply(unique(data$authors), function(d) {
+  edges = lapply(unique(data$authors), function(d) {
     
     w = au$name[ au$authors == d ] # sponsor list is ordered
     
     d = expand.grid(i = w, j = w[1], stringsAsFactors = FALSE)
     
-    return(data.frame(d, w = length(w) - 1)) # number of cosponsors
+    return(data.frame(d, w = length(w) - 1, stringsAsFactors = FALSE)) # number of cosponsors
     
-  }))
+  }) %>% bind_rows
     
   #
   # edge weights
@@ -100,7 +97,7 @@ for(ii in rev(unique(na.omit(b$legislature)))) {
   n %v% "born" = as.numeric(substr(sp[ network.vertex.names(n), "born" ], 1, 4))
   n %v% "constituency" = as.character(sp[ network.vertex.names(n), "constituency" ])
   n %v% "party" = as.character(sp[ network.vertex.names(n), "party" ])
-  n %v% "partyname" = as.character(sp[ network.vertex.names(n), "partyname" ])
+  n %v% "partyname" = as.character(groups[ n %v% "party" ])
   n %v% "lr" = as.numeric(scores[ n %v% "party" ])
   n %v% "photo" = as.character(sp[ network.vertex.names(n), "photo" ])
   # mandate years done up to start year of legislature

@@ -1,20 +1,17 @@
 # add committee co-memberships (unfortunately very approximate)
 
 load("data/net_is.rda")
-sponsors = dir("raw", pattern = "mp-\\d+\\.html$", full.names = TRUE)
-raw = data.frame()
-
-# extract committees from XML files
-# full list: http://data.riksdagen.se/sv/koder/?typ=organ&utformat=html
+sponsors = list.files("raw/mp-pages", full.names = TRUE)
+raw = data_frame()
 
 for(i in sponsors) {
   
-  h = htmlParse(i, encoding = "UTF-8")
+  h = html(i, encoding = "UTF-8")
   n = xpathSApply(h, "//p[contains(text(), 'nefnd 19') or contains(text(), 'nefnd 20')]", xmlValue)
   
   if(length(n)) {
     n = unlist(strsplit(n, ","))
-    raw = rbind(raw, data.frame(i, n, stringsAsFactors = FALSE))
+    raw = rbind(raw, data_frame(i, n))
   }
   
 }
@@ -43,11 +40,11 @@ write.csv(arrange(raw[, c("y", "n") ], y, n) %>%
 # unique legislature-committee pairings
 raw$u = paste(raw$y, raw$n)
 
-comm = data.frame(u = unique(raw$u), stringsAsFactors = FALSE)
+comm = data_frame(u = unique(raw$u))
 
 # add sponsor columns
 for(i in sponsors)
-  comm[, gsub("raw/mp-|\\.html", "", i) ] = 0
+  comm[, gsub("mp-|\\.html", "", basename(i)) ] = 0
 
 for(i in colnames(comm)[ -1 ])
   comm[ , i ] = as.numeric(comm$u %in% raw$u[ raw$i == i ])

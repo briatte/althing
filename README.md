@@ -26,7 +26,6 @@ The `build.r` script then assembles the edge lists and plots the networks, with 
 - `authors` -- URL to sponsors list
 - `text` -- sponsors list
 - `sponsors` -- semicolon-separated integer ids of sponsors
-- `ministry` -- is the bill authored by the executive (logical)
 - `n_au` -- total number of sponsors
 
 ## Sponsors
@@ -36,7 +35,6 @@ The `build.r` script then assembles the edge lists and plots the networks, with 
 - `born` -- year of birth (int)
 - `photo` -- photo URL, shortened to filename number
 - `party` -- main party affiliation (with some transitions ignored), abbreviated
-- `partyname` -- main party affiliation (with some transitions ignored), full name
 - `constituency` -- sponsor constituency, stored as the string to its Wikipedia Íslenska entry
 - `sex` -- gender (F/M), imputed from first and family names
 - `mandate` -- semicolon-separated mandate years, used to compute the `nyears` seniority variable

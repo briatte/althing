@@ -78,7 +78,7 @@ for(ii in rev(unique(na.omit(b$legislature)))) {
                                         collapse = " to "))
 
   n %n% "n_bills" = nrow(data)
-  n %n% "n_sponsors" = table(subset(b, legislature == ii)$n_au)
+  n %n% "n_sponsors" = table(subset(b, legislature == ii & n_au > 0)$n_au)
   
   n_au = as.vector(n_au[ network.vertex.names(n) ])
   n %v% "n_au" = ifelse(is.na(n_au), 0, n_au)

@@ -5,16 +5,16 @@ root = "http://www.althingi.is"
 bills = "data/bills.csv"
 sponsors = "data/sponsors.csv"
 
-if(!file.exists(bills)) {
+if (!file.exists(bills)) {
   
   b = data_frame()
-  for(i in 144:119) { # accepts down to 20 (1907)
+  for (i in 144:119) { # accepts down to 20 (1907)
     
     cat(sprintf("%3.0f", i))
     
     f = paste0("raw/bill-lists/bills-", i, ".html")
     
-    if(!file.exists(f))
+    if (!file.exists(f))
       download.file(paste0(root, "/thingstorf/thingmalalistar-eftir-thingum/lagafrumvorp/?lthing=", i), f,
                     quiet = TRUE, mode = "wb")
     
@@ -61,18 +61,19 @@ stopifnot(n_distinct(b$authors) == nrow(b))
 j = unique(b$authors[ !grepl("herra$", b$author) ]) # skip ministerial bills
 a = data_frame()
 
-for(i in rev(j)) {
+cat("Parsing", length(j), "bills...\n")
+for (i in rev(j)) {
   
-  cat(sprintf("%4.0f", which(j == i)), str_pad(i, 61, "right"))
+  # cat(sprintf("%4.0f", which(j == i)), str_pad(i, 61, "right"))
   
   f = gsub("(.*)lthing=(\\d+)&skjalnr=(\\d+)", "raw/bill-pages/bill-\\2-\\3.html", i)
   
-  if(!file.exists(f))
+  if (!file.exists(f))
     try(download.file(paste0(root, i), f, quiet = TRUE, mode = "wb"), silent = TRUE)
   
-  if(!file.info(f)$size) {
+  if (!file.info(f)$size) {
     
-    cat(": failed\n")
+    # cat(": failed\n")
     file.remove(f)
     warning(paste("failed to download bill", i))
     
@@ -91,9 +92,9 @@ for(i in rev(j)) {
     bio = bio[ !grepl("nfaerslunr=1123", url) ]
     url = url[ !grepl("nfaerslunr=1123", url) ]
     
-    if(length(url)) {
+    if (length(url)) {
       
-      cat(":", sprintf("%3.0f", length(url)), "sponsor(s)\n")
+      # cat(":", sprintf("%3.0f", length(url)), "sponsor(s)\n")
       
       a = rbind(a, data_frame(authors = b$authors[ b$authors == i ], bio, url))
       b$n_au[ b$authors == i ] = length(url)
@@ -101,7 +102,7 @@ for(i in rev(j)) {
     } else {
       
       b$n_au[ b$authors == i ] = 0
-      cat(": no sponsors\n")
+      # cat(": no sponsors\n")
       
     }
     
@@ -222,20 +223,20 @@ stopifnot(grepl(",", a$bio))
 
 # scrape sponsors
 
-if(!file.exists(sponsors)) {
+if (!file.exists(sponsors)) {
   
   j = unique(a$url)
   s = data_frame()
   
-  for(i in rev(j)) {
+  for (i in rev(j)) {
     
     cat(sprintf("%3.0f", which(j == i)), str_pad(i, 31, "right"))
     f = gsub("(.*)nfaerslunr=(\\d+)", "raw/mp-pages/mp-\\2.html", i)
     
-    if(!file.exists(f))
+    if (!file.exists(f))
       download.file(paste0(root, i), f, quiet = TRUE, mode = "wb")
     
-    if(!file.info(f)$size) {
+    if (!file.info(f)$size) {
       
       file.remove(f)
       cat(": failed\n")
@@ -249,7 +250,7 @@ if(!file.exists(sponsors)) {
     born = html_nodes(h, xpath = "//p[starts-with(text(), 'F.') or starts-with(text(), ' F.') or starts-with(text(), 'Fædd')]") %>% html_text
     born = ifelse(!length(born), NA, str_extract(born, "[0-9]{4}"))
     
-    if(!length(photo)) {
+    if (!length(photo)) {
       
       p = NA
       
@@ -257,10 +258,10 @@ if(!file.exists(sponsors)) {
       
       p = gsub("html$", "jpg", gsub("raw/mp-pages/mp-", "photos/", f))
       
-      if(!file.exists(p))
+      if (!file.exists(p))
         download.file(paste0(root, photo %>% html_attr("src")), p, quiet = TRUE, mode = "wb")
       
-      if(!file.info(p)$size) {
+      if (!file.info(p)$size) {
         
         cat(": failed to download photo")
         file.remove(p)
@@ -297,20 +298,19 @@ if(!file.exists(sponsors)) {
 }
 
 s = read.csv(sponsors, stringsAsFactors = FALSE)
-s$photo = gsub("photos/|\\.jpg", "", s$photo)
 
 stopifnot(a$url %in% s$url)
 
 # get seniority from CV listings
 # http://www.althingi.is/altext/cv/is/
 cv = data_frame()
-for(i in c("A", "%C1", "B", "D", "E", "F", "G", "H", "I", "%CD", "J", "K", 
+for (i in c("A", "%C1", "B", "D", "E", "F", "G", "H", "I", "%CD", "J", "K", 
            "L", "M", "N", "O", "%D3", "P", "R", "S", "T", "U", "V", "W", 
            "%DE", "%D6")) {
   
   f = paste0("raw/mp-lists/cvs-", i, ".html")
   
-  if(!file.exists(f))
+  if (!file.exists(f))
     download.file(paste0(root, "/altext/cv/is/?cstafur=", i, "&bnuverandi=0"),
                   f, quiet = TRUE, mode = "wb")
   
@@ -368,6 +368,10 @@ s$party[ s$party == "U" ] = "IND" # utan flokka
 
 stopifnot(!is.na(groups[ s$party ]))
 
+# ==============================================================================
+# CHECK CONSTITUENCIES
+# ==============================================================================
+
 # expand constituency names
 s$constituency = c(
   "AL" = "Austurlandskjördæmi", # Austurlands(kjördæmis)
@@ -385,9 +389,47 @@ s$constituency = c(
 
 stopifnot(!is.na(s$constituency))
 
-# check for missing sponsors
-for(i in b$authors[ !is.na(b$n_au) ]) {
-  stopifnot(b$n_au[ b$authors == i ] == nrow(filter(a, authors == i)))
+cat("Checking constituencies,", sum(is.na(s$constituency)), "missing...\n")
+for (i in s$constituency %>% unique %>% na.omit) {
+  
+  g = GET(paste0("https://is.wikipedia.org/wiki/", i))
+  
+  if (status_code(g) != 200)
+    cat("Missing Wikipedia entry:", i, "\n")
+  
+  g = xpathSApply(htmlParse(g), "//title", xmlValue)
+  g = gsub("(.*) - Wikipedia(.*)", "\\1", g)
+  
+  if (gsub("\\s", "_", g) != i)
+    cat("Discrepancy:", g, "(WP) !=", i ,"(data)\n")
+  
 }
+
+# ============================================================================
+# QUALITY CONTROL
+# ============================================================================
+
+# - might be missing: born (int of length 4), constituency (chr),
+#   photo (chr, folder/file.ext)
+# - never missing: sex (chr, F/M), nyears (int), url (chr, URL),
+#   party (chr, mapped to colors)
+
+cat("Missing", sum(is.na(s$born)), "years of birth\n")
+stopifnot(is.integer(s$born) & nchar(s$born) == 4 | is.na(s$born))
+
+cat("Missing", sum(is.na(s$constituency)), "constituencies\n")
+stopifnot(is.character(s$constituency))
+
+cat("Missing", sum(is.na(s$photo)), "photos\n")
+stopifnot(is.character(s$photo) & grepl("^photos(_\\w{2})?/(.*)\\.\\w{3}", s$photo) | is.na(s$photo))
+
+stopifnot(!is.na(s$sex) & s$sex %in% c("F", "M"))
+# stopifnot(!is.na(s$nyears) & is.integer(s$nyears)) ## computed on the fly
+# stopifnot(!is.na(s$url) & grepl("^http(s)?://(.*)", s$url)) ## used as uids
+stopifnot(s$party %in% names(colors))
+
+# final check: find any missing sponsors
+for (i in b$authors[ !is.na(b$n_au) ])
+  stopifnot(b$n_au[ b$authors == i ] == nrow(filter(a, authors == i)))
 
 # kthxbye

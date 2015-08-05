@@ -20,8 +20,15 @@ dir.create("raw/mp-pages"   , showWarnings = FALSE)
 
 plot = TRUE
 gexf = TRUE
-meta = c("Iceland", "Althing")
 mode = "fruchtermanreingold"
+meta = c(
+  "cty" = "Iceland",
+  "lang" = "is", # Wikipedia language for chamber and constituencies
+  "ch" = "Alþingi",
+  "type" = "Unicameral",
+  "ipu" = 2143,
+  "seats" = 63
+)
 
 # build routine
 

@@ -1,4 +1,4 @@
-for(ii in rev(unique(na.omit(b$legislature)))) {
+for (ii in rev(unique(na.omit(b$legislature)))) {
   
   cat(ii)
   data = subset(b, legislature == ii & n_au > 1)
@@ -73,11 +73,16 @@ for(ii in rev(unique(na.omit(b$legislature)))) {
   
   n = network(edges[, 1:2 ], directed = TRUE)
   
-  n %n% "country" = meta[1]
-  n %n% "title" = paste(meta[2], paste0(range(unique(substr(data$date, 1, 4))),
-                                        collapse = " to "))
-
-  n %n% "n_bills" = nrow(data)
+  n %n% "country" = meta[ "cty" ] %>% as.character
+  n %n% "lang" = meta[ "lang" ] %>% as.character
+  n %n% "years" = ii
+  n %n% "legislature" = paste0(range(data$session), collapse = "-")
+  n %n% "chamber" = meta[ "ch" ] %>% as.character
+  n %n% "type" = meta[ "type" ] %>% as.character
+  n %n% "ipu" = meta[ "ipu" ] %>% as.integer
+  n %n% "seats" = meta[ "seats" ] %>% as.integer
+  
+  n %n% "n_cosponsored" = nrow(data)
   n %n% "n_sponsors" = table(subset(b, legislature == ii & n_au > 0)$n_au)
   
   n_au = as.vector(n_au[ network.vertex.names(n) ])
@@ -92,24 +97,19 @@ for(ii in rev(unique(na.omit(b$legislature)))) {
   
   rownames(sp) = sp$name
   
-  n %v% "url" = as.character(gsub("/altext/cv/is/\\?nfaerslunr=", "", sp[ network.vertex.names(n), "url" ]))
-  n %v% "sex" = as.character(sp[ network.vertex.names(n), "sex" ])
-  n %v% "born" = as.numeric(substr(sp[ network.vertex.names(n), "born" ], 1, 4))
-  n %v% "constituency" = as.character(sp[ network.vertex.names(n), "constituency" ])
-  n %v% "party" = as.character(sp[ network.vertex.names(n), "party" ])
-  n %v% "partyname" = as.character(groups[ n %v% "party" ])
-  n %v% "lr" = as.numeric(scores[ n %v% "party" ])
-  n %v% "photo" = as.character(sp[ network.vertex.names(n), "photo" ])
+  n %v% "url" = paste0(root, sp[ network.vertex.names(n), "url" ])
+  n %v% "sex" = sp[ network.vertex.names(n), "sex" ]
+  n %v% "born" = sp[ network.vertex.names(n), "born" ]
+  n %v% "constituency" = sp[ network.vertex.names(n), "constituency" ]
+  n %v% "party" = sp[ network.vertex.names(n), "party" ]
+  n %v% "partyname" = groups[ n %v% "party" ] %>% as.character
+  n %v% "lr" = scores[ n %v% "party" ] %>% as.numeric
+  n %v% "photo" = sp[ network.vertex.names(n), "photo" ]
   # mandate years done up to start year of legislature
   sp$nyears = sapply(sp$mandate, function(x) {
     sum(unlist(strsplit(x, ";")) <= as.numeric(substr(ii, 1, 4)))
   })
-  n %v% "nyears" = as.numeric(sp[ network.vertex.names(n), "nyears" ])
-  
-  # unweighted degree
-  n %v% "degree" = degree(n)
-  q = n %v% "degree"
-  q = as.numeric(cut(q, unique(quantile(q)), include.lowest = TRUE))
+  n %v% "nyears" = sp[ network.vertex.names(n), "nyears" ] %>% as.integer
   
   set.edge.attribute(n, "source", as.character(edges[, 1])) # cosponsor
   set.edge.attribute(n, "target", as.character(edges[, 2])) # first author
@@ -122,12 +122,12 @@ for(ii in rev(unique(na.omit(b$legislature)))) {
   # network plot
   #
   
-  if(plot) {
+  if (plot) {
     
-    save_plot(n, file = paste0("plots/net_is", ii),
+    save_plot(n, paste0("plots/net_is", ii),
               i = colors[ sp[ n %e% "source", "party" ] ],
               j = colors[ sp[ n %e% "target", "party" ] ], 
-              q, colors, order)
+              mode, colors)
     
   }
     
@@ -143,8 +143,8 @@ for(ii in rev(unique(na.omit(b$legislature)))) {
   # export gexf
   #
   
-  if(gexf)
-    save_gexf(paste0("net_is", ii), n, meta, mode, colors, extra = "constituency")
+  if (gexf)
+    save_gexf(n, paste0("net_is", ii), mode, colors)
   
 }
 
@@ -152,7 +152,7 @@ for(ii in rev(unique(na.omit(b$legislature)))) {
 # save
 #
 
-if(gexf)
+if (gexf)
   zip("net_is.zip", dir(pattern = "^net_is\\d{4}-\\d{4}\\.gexf$"))
 
 save(list = ls(pattern = "^(net|edges|bills)_is\\d{4}$"), 

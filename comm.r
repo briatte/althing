@@ -4,12 +4,12 @@ load("data/net_is.rda")
 sponsors = list.files("raw/mp-pages", full.names = TRUE)
 raw = data_frame()
 
-for(i in sponsors) {
+for (i in sponsors) {
   
   h = html(i, encoding = "UTF-8")
   n = xpathSApply(h, "//p[contains(text(), 'nefnd 19') or contains(text(), 'nefnd 20')]", xmlValue)
   
-  if(length(n)) {
+  if (length(n)) {
     n = unlist(strsplit(n, ","))
     raw = rbind(raw, data_frame(i, n))
   }
@@ -43,16 +43,16 @@ raw$u = paste(raw$y, raw$n)
 comm = data_frame(u = unique(raw$u))
 
 # add sponsor columns
-for(i in sponsors)
+for (i in sponsors)
   comm[, gsub("mp-|\\.html", "", basename(i)) ] = 0
 
-for(i in colnames(comm)[ -1 ])
+for (i in colnames(comm)[ -1 ])
   comm[ , i ] = as.numeric(comm$u %in% raw$u[ raw$i == i ])
 
 stopifnot(gsub("\\D", "", s$url) %in% names(comm[, -1]))
 
 # assign co-memberships to networks
-for(i in ls(pattern = "^net_")) {
+for (i in ls(pattern = "^net_")) {
   
   n = get(i)
   cat(i, ":", network.size(n), "nodes")
@@ -81,7 +81,7 @@ for(i in ls(pattern = "^net_")) {
                  stringsAsFactors = FALSE)
   e$committee = NA
   
-  for(j in 1:nrow(e))
+  for (j in 1:nrow(e))
     e$committee[ j ] = m[ e$i[ j ], e$j[ j ] ]
   
   cat(" co-memberships:",

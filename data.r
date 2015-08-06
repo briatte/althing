@@ -431,5 +431,3 @@ stopifnot(s$party %in% names(colors))
 # final check: find any missing sponsors
 for (i in b$authors[ !is.na(b$n_au) ])
   stopifnot(b$n_au[ b$authors == i ] == nrow(filter(a, authors == i)))
-
-# kthxbye

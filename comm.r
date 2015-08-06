@@ -1,6 +1,5 @@
 # add committee co-memberships (unfortunately very approximate)
 
-load("data/net_is.rda")
 sponsors = list.files("raw/mp-pages", full.names = TRUE)
 raw = data_frame()
 
@@ -103,6 +102,3 @@ for (i in ls(pattern = "^net_")) {
   assign(paste0("co", i), nn)
   
 }
-
-save(list = ls(pattern = "^((co)?net|edges|bills)_is\\d{4}$"), 
-     file = "data/net_is.rda")

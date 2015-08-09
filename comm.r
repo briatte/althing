@@ -51,7 +51,7 @@ for (i in colnames(comm)[ -1 ])
 stopifnot(gsub("\\D", "", s$url) %in% names(comm[, -1]))
 
 # assign co-memberships to networks
-for (i in ls(pattern = "^net_")) {
+for (i in ls(pattern = "^net_is")) {
   
   n = get(i)
   cat(i, ":", network.size(n), "nodes")
@@ -75,9 +75,7 @@ for (i in ls(pattern = "^net_")) {
   colnames(m) = sp[ colnames(m) ]
   rownames(m) = sp[ rownames(m) ]
   
-  e = data.frame(i = n %e% "source",
-                 j = n %e% "target",
-                 stringsAsFactors = FALSE)
+  e = data_frame(i = n %e% "source", j = n %e% "target")
   e$committee = NA
   
   for (j in 1:nrow(e))

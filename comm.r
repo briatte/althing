@@ -5,7 +5,7 @@ raw = data_frame()
 
 for (i in sponsors) {
   
-  h = html(i, encoding = "UTF-8")
+  h = read_html(i, encoding = "UTF-8")
   n = xpathSApply(h, "//p[contains(text(), 'nefnd 19') or contains(text(), 'nefnd 20')]", xmlValue)
   
   if (length(n)) {

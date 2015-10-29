@@ -18,7 +18,7 @@ if (!file.exists(bills)) {
       download.file(paste0(root, "/thingstorf/thingmalalistar-eftir-thingum/lagafrumvorp/?lthing=", i), f,
                     quiet = TRUE, mode = "wb")
     
-    h = html(f) %>% html_nodes("#t_malalisti")
+    h = read_html(f) %>% html_nodes("#t_malalisti")
     
     n = html_nodes(h, "td:nth-child(1)") %>% html_text
     
@@ -79,7 +79,7 @@ for (i in rev(j)) {
     
   } else {
 
-    h = html(f, encoding = "UTF-8")
+    h = read_html(f, encoding = "UTF-8")
     
     bio = html_nodes(h, ".pgmain") %>% html_text %>% strsplit("\\n") %>% unlist
     url = html_nodes(h, ".pgmain a") %>% html_attr("href")
@@ -243,7 +243,7 @@ if (!file.exists(sponsors)) {
       
     }
     
-    h = html(f, encoding = "UTF-8")
+    h = read_html(f, encoding = "UTF-8")
     
     name = html_node(h, ".article h1") %>% html_text
     photo = html_node(h, ".article img")
@@ -314,7 +314,7 @@ for (i in c("A", "%C1", "B", "D", "E", "F", "G", "H", "I", "%CD", "J", "K",
     download.file(paste0(root, "/altext/cv/is/?cstafur=", i, "&bnuverandi=0"),
                   f, quiet = TRUE, mode = "wb")
   
-  h = html(f, encoding = "UTF-8")
+  h = read_html(f, encoding = "UTF-8")
   
   u = html_nodes(h, xpath = "//a[contains(@href, 'nfaerslunr')]") %>% html_attr("href")
   m = html_nodes(h, xpath = "//a[contains(@href, 'nfaerslunr')]/..") %>% html_text

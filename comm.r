@@ -6,7 +6,7 @@ raw = data_frame()
 for (i in sponsors) {
   
   h = read_html(i, encoding = "UTF-8")
-  n = xpathSApply(h, "//p[contains(text(), 'nefnd 19') or contains(text(), 'nefnd 20')]", xmlValue)
+  n = html_nodes(h, xpath = "//p[contains(text(), 'nefnd 19') or contains(text(), 'nefnd 20')]") %>% html_text
   
   if (length(n)) {
     n = unlist(strsplit(n, ","))

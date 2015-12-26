@@ -8,7 +8,7 @@ sponsors = "data/sponsors.csv"
 if (!file.exists(bills)) {
   
   b = data_frame()
-  for (i in 144:119) { # accepts down to 20 (1907)
+  for (i in 145:119) { # accepts down to 20 (1907)
     
     cat(sprintf("%3.0f", i))
     
@@ -113,7 +113,7 @@ for (i in rev(j)) {
 write.csv(b, bills, row.names = FALSE)
 
 b$legislature = NA
-b$legislature[ b$session %in% 142:144 ] = "2013-2017" # election in April, bills from s. 142 start in June
+b$legislature[ b$session %in% 142:145 ] = "2013-2017" # election in April, bills from s. 142 start in June
 b$legislature[ b$session %in% 137:141 ] = "2009-2013" # election in April, bills from s. 137 start in May
 b$legislature[ b$session %in% 134:136 ] = "2007-2009" # election on May 12, bills from s. 134 start May 31
 b$legislature[ b$session %in% 130:133 ] = "2003-2007" # election on May 10, no bills in s. 129, s. 130 starts in October
@@ -246,7 +246,7 @@ if (!file.exists(sponsors)) {
     h = read_html(f, encoding = "UTF-8")
     
     name = html_node(h, ".article h1") %>% html_text
-    photo = html_node(h, ".article img")
+    photo = html_nodes(h, ".article img")
     born = html_nodes(h, xpath = "//p[starts-with(text(), 'F.') or starts-with(text(), ' F.') or starts-with(text(), 'Fædd')]") %>% html_text
     born = ifelse(!length(born), NA, str_extract(born, "[0-9]{4}"))
     
@@ -327,6 +327,7 @@ for (i in c("A", "%C1", "B", "D", "E", "F", "G", "H", "I", "%CD", "J", "K",
 stopifnot(list.files("raw/mp-lists") %>% length == 26)
 
 # expand mandate to years
+# this part of the code sends an 'is.na applied to NULL' warning
 cv$mandate = sapply(cv$mandate, function(y) {
   
   x = as.numeric(unlist(str_extract_all(y, "[0-9]{4}")))
